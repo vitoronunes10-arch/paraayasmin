@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#f8edf0">
+<title>Uma pergunta para você, Yasmin</title>
+<style>
+  :root {
+    --paper: #fffaf8;
+    --rose: #c98291;
+    --rose-dark: #925766;
+    --rose-light: #f3dfe4;
+    --ink: #49383d;
+    --muted: #8d777d;
+    --line: #ead8dc;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    color: var(--ink);
+    background:
+      radial-gradient(circle at 12% 10%, rgba(226,174,185,.25), transparent 28rem),
+      radial-gradient(circle at 90% 80%, rgba(232,197,202,.25), transparent 30rem),
+      var(--paper);
+    font-family: Georgia, "Times New Roman", serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  /* Barra de progresso da leitura */
+  .progress-bar {
+    position: fixed;
+    top: 0; left: 0;
+    height: 3px;
+    width: 0%;
+    background: linear-gradient(90deg, var(--rose), var(--rose-dark));
+    z-index: 100;
+    transition: width 0.15s ease-out;
+  }
+  .grain {
+    position: fixed; inset: 0; pointer-events: none; opacity: .12; z-index: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.18'/%3E%3C/svg%3E");
+  }
+  /* Container de pétalas/corações flutuantes */
+  #particles {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 50;
+    overflow: hidden;
+  }
+  .particle {
+    position: absolute;
+    font-size: 18px;
+    user-select: none;
+    animation: floatUp linear forwards;
+  }
+  main { position: relative; z-index: 1; }
+  .hero {
+    min-height: 100svh; display: grid; place-items: center; padding: 34px 22px;
+    text-align: center;
+  }
+  .hero-inner { max-width: 720px; animation: rise 1.1s ease both; }
+  .eyebrow {
+    font: 11px/1.4 Arial, sans-serif; letter-spacing: .28em; text-transform: uppercase;
+    color: var(--rose-dark);
+  }
+  h1 { font-size: clamp(3.2rem, 10vw, 6.8rem); font-weight: 400; line-height: .98; margin: 25px 0 20px; }
+  .hero p { color: var(--muted); font-size: clamp(1.05rem, 2.6vw, 1.28rem); line-height: 1.8; max-width: 510px; margin: 0 auto 34px; }
+  .button {
+    border: 1px solid var(--rose); background: var(--rose); color: white; border-radius: 999px;
+    padding: 15px 28px; font: 12px Arial, sans-serif; letter-spacing: .12em; text-transform: uppercase;
+    cursor: pointer; transition: transform .25s cubic-bezier(.2,.8,.2,1), background .25s, box-shadow .25s;
+    box-shadow: 0 9px 25px rgba(160,94,111,.18);
+  }
+  .button:hover { transform: translateY(-3px) scale(1.02); background: var(--rose-dark); box-shadow: 0 13px 30px rgba(160,94,111,.25); }
+  .button:active { transform: translateY(0) scale(0.98); }
+  .tiny-heart { display: block; margin: 35px auto 0; color: var(--rose); font-size: 20px; animation: pulse 2.4s infinite; cursor: pointer; }
+  
+  section.story { max-width: 760px; margin: 0 auto; padding: 95px 26px; }
+  
+  /* Animação de revelação ao rolar a página */
+  .chapter {
+    border-top: 1px solid var(--line);
+    padding: 52px 0;
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity 0.85s cubic-bezier(.22,1,.36,1), transform 0.85s cubic-bezier(.22,1,.36,1);
+  }
+  .chapter.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .chapter:first-child { border-top: 0; }
+  .number { color: var(--rose); font: 11px Arial,sans-serif; letter-spacing: .22em; }
+  h2 { font-size: clamp(2rem, 6vw, 3.4rem); font-weight: 400; line-height: 1.12; margin: 16px 0 22px; }
+  .chapter p { max-width: 610px; font-size: clamp(1.08rem, 2.5vw, 1.25rem); line-height: 1.95; color: #6e5b61; margin: 0; }
+  
+  .quote {
+    margin: 42px 0; padding: 28px 30px; border-left: 3px solid var(--rose);
+    background: rgba(255,255,255,.65); font-size: 1.35rem; line-height: 1.65; font-style: italic;
+    border-radius: 0 14px 14px 0;
+    box-shadow: 0 8px 24px rgba(160,94,111,.05);
+    transition: transform .3s ease;
+  }
+  .quote:hover { transform: translateX(4px); }
+  
+  .distance {
+    margin: 28px 0 0; display: flex; align-items: center; gap: 15px; color: var(--rose-dark);
+    font: 11px Arial,sans-serif; letter-spacing: .14em; text-transform: uppercase;
+  }
+  .distance:before, .distance:after { content: ""; height: 1px; background: var(--line); flex: 1; }
+  
+  .final {
+    text-align: center; padding: 110px 22px 120px; background: rgba(239,218,222,.34);
+    border-top: 1px solid var(--line);
+  }
+  .final-inner {
+    max-width: 650px; margin: auto;
+    opacity: 0; transform: translateY(28px);
+    transition: opacity 0.9s ease, transform 0.9s ease;
+  }
+  .final-inner.visible { opacity: 1; transform: translateY(0); }
+  .final h2 { margin: 18px 0; }
+  .final p { color: var(--muted); font-size: 1.12rem; line-height: 1.8; }
+  .answers { display: flex; justify-content: center; flex-wrap: wrap; gap: 14px; margin-top: 34px; }
+  .button.secondary { color: var(--rose-dark); background: rgba(255,255,255,0.6); box-shadow: none; }
+  .button.secondary:hover { background: white; }
+  
+  #answer {
+    display: none; margin: 38px auto 0; max-width: 540px; padding: 30px 28px;
+    background: rgba(255,255,255,.88); border: 1px solid var(--rose); border-radius: 20px;
+    font-size: 1.16rem; line-height: 1.8;
+    box-shadow: 0 16px 40px rgba(146,87,102,.12);
+    animation: popIn .6s cubic-bezier(.17,.89,.32,1.25) both;
+  }
+  .timestamp-badge {
+    display: inline-block;
+    margin-top: 18px;
+    padding: 8px 16px;
+    background: var(--rose-light);
+    color: var(--rose-dark);
+    border-radius: 999px;
+    font: 11px/1.4 Arial, sans-serif;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+  }
+  footer { text-align: center; padding: 26px; color: #a18c91; font: 10px Arial,sans-serif; letter-spacing: .16em; }
+  
+  @keyframes rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes popIn { from { opacity: 0; transform: scale(0.92) translateY(14px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+  @keyframes pulse { 0%,100% { transform: scale(1); opacity: .7; } 50% { transform: scale(1.25); opacity: 1; } }
+  @keyframes floatUp {
+    0% { transform: translateY(0) rotate(0deg) scale(0.8); opacity: 0; }
+    15% { opacity: 0.9; }
+    85% { opacity: 0.8; }
+    100% { transform: translateY(-105vh) rotate(360deg) scale(1.2); opacity: 0; }
+  }
+  @media (max-width: 520px) {
+    .hero { min-height: 92svh; }
+    section.story { padding: 65px 24px; }
+    .chapter { padding: 38px 0; }
+    .quote { padding: 22px; margin: 30px 0; }
+    .final { padding: 82px 22px 90px; }
+    .answers { flex-direction: column; align-items: stretch; max-width: 320px; margin-left: auto; margin-right: auto; }
+  }
+</style>
+</head>
+<body>
+<div class="progress-bar" id="progressBar"></div>
+<div class="grain"></div>
+<div id="particles"></div>
+
+<main>
+  <header class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">uma coisa que eu queria te dizer</div>
+      <h1>Yasmin<span style="color:var(--rose)">.</span></h1>
+      <p>Eu comecei a pensar em como poderia fazer isso e percebi que nenhuma frase muito elaborada ia dizer melhor o que eu quero. Então fiz desse jeito: com calma, do meu jeito e tentando colocar aqui um pouco do que você significa pra mim.</p>
+      <button class="button" onclick="document.getElementById('comeco').scrollIntoView({behavior:'smooth'})">Quero te contar uma coisa</button>
+      <span class="tiny-heart" onclick="spawnHearts(8)" title="Clique aqui">♡</span>
+    </div>
+  </header>
+
+  <section class="story" id="comeco">
+    <article class="chapter reveal">
+      <div class="number">01 — SOBRE VOCÊ</div>
+      <h2>É bom ter encontrado você.</h2>
+      <p>Tem pessoas que aparecem na nossa vida sem que a gente esteja esperando e, quando percebe, já fazem parte de vários momentos do dia. Você foi se tornando alguém assim pra mim. Eu gosto de conversar com você, de saber como foi seu dia, de conhecer suas opiniões e até de prestar atenção nas pequenas coisas que você conta. São detalhes simples, mas que acabam fazendo diferença. Acho que o mais especial é que eu não preciso ficar tentando encontrar um assunto ou fingir ser alguém diferente. Gosto de poder falar com você sendo eu mesmo, e gosto de conhecer cada vez mais a pessoa que você é. Talvez eu não consiga explicar exatamente quando isso começou, mas sei que, aos poucos, você ganhou um espaço muito bonito na minha vida.</p>
+    </article>
+    <article class="chapter reveal">
+      <div class="number">02 — O QUE EU PERCEBO</div>
+      <h2>A gente se entende de um jeito parecido.</h2>
+      <p>Uma coisa que me chama bastante atenção é como nossos jeitos se parecem. Não é só sobre gostar de coisas parecidas; é também sobre algumas maneiras de pensar, de enxergar as situações e até de lidar com certas partes da vida. Às vezes, enquanto converso com você, percebo que temos experiências ou pensamentos que se aproximam de um jeito que eu não esperava encontrar em outra pessoa. E isso me deixa feliz, porque é bom conhecer alguém que entende algumas coisas sem que seja preciso explicar tudo desde o começo. Claro que a gente tem nossas diferenças, e isso também faz parte de conhecer alguém de verdade. Mas existe algo muito confortável nessa identificação que sinto com você. É como encontrar alguém que, de alguma forma, entende um pedacinho do seu mundo.</p>
+      <div class="quote">“É uma sensação boa poder ser eu mesmo e, ao mesmo tempo, conhecer alguém que parece entender um pouco desse meu mundo.”</div>
+    </article>
+    <article class="chapter reveal">
+      <div class="number">03 — MESMO DE LONGE</div>
+      <h2>Tem quilômetros entre a gente. Ainda assim…</h2>
+      <p>Eu não vou fingir que a distância não existe. Ela está aí, e às vezes dá vontade de poder encurtar todos esses quilômetros só para passar um tempo com você, conversar sem precisar olhar para uma tela ou simplesmente estar no mesmo lugar. Mas, mesmo com essa distância, eu gosto de ter você presente nos meus dias. Gosto das nossas conversas e da ideia de que, mesmo cada um estando em um lugar, a gente pode construir algo que seja importante para os dois. Não quero que a distância seja a parte principal da nossa história, nem que ela defina o que a gente pode viver. Prefiro pensar em tudo que ainda podemos compartilhar e nos momentos que, quem sabe, um dia vão deixar de ser planos e vão acontecer de verdade. Eu sei que não é tudo simples, mas acho que algumas coisas valem a vontade de tentar.</p>
+      <div class="distance">duas cidades · uma vontade de se aproximar</div>
+    </article>
+    <article class="chapter reveal">
+      <div class="number">04 — O QUE EU QUERIA</div>
+      <h2>Eu queria dar um próximo passo.</h2>
+      <p>Eu não estou fazendo isso porque acho que um relacionamento precisa ser perfeito ou porque tenho alguma ideia de que tudo vai ser fácil. Sei que cada pessoa tem seu tempo, seus dias bons, seus dias complicados e seu próprio jeito de sentir as coisas. O que eu quero é ter a oportunidade de viver essa experiência com você. Quero continuar descobrindo seu jeito, dividir meus dias com você, saber das coisas que te deixam feliz e também estar por perto quando as coisas não estiverem tão bem. Quero que a gente possa conversar sobre tudo, rir de coisas bobas, criar nossas próprias lembranças e aprender a cuidar um do outro, mesmo quando a distância exigir um pouco mais de paciência. Não tenho como prever tudo o que vem pela frente, mas tenho vontade de descobrir. E, sinceramente, gostaria muito que fosse com você.</p>
+    </article>
+  </section>
+
+  <section class="final">
+    <div class="final-inner reveal">
+      <div class="eyebrow">então, Yasmin…</div>
+      <h2>Você aceita namorar comigo?</h2>
+      <p>Eu espero que você também queira dar esse passo comigo. Não precisa existir uma resposta perfeita, nem quero que você se sinta pressionada. Só queria que soubesse que esse pedido é sincero e que pensei com carinho em cada parte dele. Seja qual for sua resposta, quero que a gente possa conversar com honestidade.</p>
+      <div class="answers">
+        <button class="button" onclick="showAnswer('sim')">Sim, eu aceito ♡</button>
+        <button class="button secondary" onclick="showAnswer('conversar')">Quero conversar com você</button>
+      </div>
+      <div id="answer" role="status"></div>
+    </div>
+  </section>
+</main>
+<footer>FEITO COM CARINHO · PARA YASMIN</footer>
+
+<script>
+// Barra de progresso no topo ao rolar
+window.addEventListener('scroll', () => {
+  const scrollTop = window.scrollY;
+  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+  const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+  document.getElementById('progressBar').style.width = progress + '%';
+});
+
+// Animação suave de entrada para cada capítulo ao rolar a página
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.15 });
+
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// Efeito de corações/pétalas subindo na tela
+function spawnHearts(count = 25) {
+  const container = document.getElementById('particles');
+  const symbols = ['♡', '♥', '✿', '✨'];
+  const colors = ['#c98291', '#925766', '#e0a4b1', '#d48c9c'];
+
+  for (let i = 0; i < count; i++) {
+    setTimeout(() => {
+      const p = document.createElement('span');
+      p.className = 'particle';
+      p.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+      p.style.left = Math.random() * 100 + 'vw';
+      p.style.bottom = '-30px';
+      p.style.color = colors[Math.floor(Math.random() * colors.length)];
+      p.style.fontSize = (14 + Math.random() * 16) + 'px';
+      const duration = 3.2 + Math.random() * 2.5;
+      p.style.animationDuration = duration + 's';
+      container.appendChild(p);
+
+      setTimeout(() => p.remove(), duration * 1000);
+    }, i * 90);
+  }
+}
+
+// Formata a data e hora exata do momento do clique
+function getFormattedDateTime() {
+  const agora = new Date();
+  const data = agora.toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric'
+  });
+  const hora = agora.toLocaleTimeString('pt-BR', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  });
+  return `${data} às ${hora}`;
+}
+
+function showAnswer(choice) {
+  const box = document.getElementById('answer');
+  box.style.display = 'block';
+  // Reinicia a animação caso ela clique novamente
+  box.style.animation = 'none';
+  box.offsetHeight; 
+  box.style.animation = null;
+
+  if (choice === 'sim') {
+    const momento = getFormattedDateTime();
+    box.innerHTML = `
+      <strong style="color: var(--rose-dark); font-size: 1.25rem; display: block; margin-bottom: 10px;">
+        Essa foi a resposta mais feliz da minha vida. ♡
+      </strong>
+      Você não imagina o quanto eu fiquei feliz com isso. Quero que a gente viva essa história do nosso jeito, com carinho, respeito e muita sinceridade.<br>
+      <div class="timestamp-badge">Registrado em: ${momento}</div>
+    `;
+    spawnHearts(35);
+  } else {
+    box.innerHTML = `
+      Tudo bem. Quero ouvir o que você sente e conversar com calma. O mais importante pra mim é que a gente seja sincero um com o outro. ♡
+    `;
+  }
+
+  setTimeout(() => {
+    box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, 100);
+}
+</script>
+</body>
+</html>
